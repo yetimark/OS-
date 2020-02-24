@@ -1,0 +1,21 @@
+Bit: 	| 15 14 13 12 11 10 9 8 | 7 6 5 4 | 3 2 1 0 |
+Content:| ASCII			| FG	  | BG      |
+
+
+Color	Value
+Black	0
+Blue	1
+Green	2
+Cyan	3
+Red	4
+Magenta	5
+Brown	6
+l Grey	7
+d Grey	8
+l Blue	9
+l Green 10
+l Cyan	11
+l Red	12
+l Magen	13
+l Brwon	14
+White	15

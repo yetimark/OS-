@@ -1,0 +1,5 @@
+default=0
+timout=o
+
+title os
+kernel /boot/kernel.elf
