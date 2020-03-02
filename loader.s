@@ -12,7 +12,7 @@ kernel_stack:
 
 extern main
 
-section .text:						; start of the (code) section
+section .text						; start of the (code) section
 align 4							
 	dd MAGIC_NUMBER					
 	dd FLAGS

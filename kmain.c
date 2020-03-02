@@ -9,6 +9,9 @@
 #define FB_HIGH_BYTE_COMMAND	14
 #define FB_LOW_BYTE_COMMAND	15
 
+#define FB_FONT		5
+#define FB_BACK		3
+
 void fb_move_cursor(unsigned short pos)
 {
 	outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
@@ -21,9 +24,15 @@ void fb_move_cursor(unsigned short pos)
 /* frame buffer */
 char* fb = (char *) 0x000B8000;
 
+/* memory spaces */
+char* dataMarkStart = (char*) 0x00200000;
+char* dataMarkEnd = (char*) 0x010FF7FE;
+char* dataRealStart = (char*) 0x010FF7FF;
+char* dataRealEnd = (char*)
+
 
 // framebuffer for writing on screen
-void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg) 
+void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
 {
 	fb[i] = c;
 	fb[i + 1] = ((fg & 0x0F) << 4) | (bg & 0x0F);
@@ -82,106 +91,81 @@ int serial_is_transmit_fifo_empty(unsigned int com)
 	//return 0;
 }
 
-void fb_write_string()
+void fb_write_string(int offset, char* s, int length)
 {
-	//clip at 1:13
+	for(int i = 0; i < length; i++)
+	{
+		fb_write_cell(offset + i*2, s[i], FB_FRONT, FB_BACK);
+	}
 }
 
 void fb_clear()
 {
 	for(int i = 0; i < 80 *25; i++)
 	{
-		fb_write_cell(i*2, ' ', 5, 3);
+		fb_write_cell(i*2, ' ', FB_FRONT, FB_BACK);
 	}
 }
 
-/* start of memory space to store stuff */
-char* bucketStart = (char *) 0x00300000;
-
-/* Start of memory space for the mid level get mem function */
-char* byteFlagStart = (char *) 0x00E7F800;
-
-/* start of memory availability flags (specifically the packed version) or the hard getmem*/
-char* flagStart = (char *) 0x01C5F200; 
-// stack space begins at 0x01FFF000 I believe
-
-
-/* do not worry about running out of memory 
-	returns next memory address and advances the pointer forwards
-	HAS NO CHECKING */
-char* easyGetMem(unsigned int numberOfBuckets)
+int isMemAvailable(char* baseAddress, int size)
 {
-	char* returnAddress = bucketStart;
-	/*advance bucket pointer ony byte for each bucket requested */
-	while (numberOfBuckets > 0)
+	for(char* c = baseAddress; c < (baseAddress + size); c++)
 	{
-		bucketStart += 0x00000008;
-		numberOfBuckets--;
+		if (*c == 1)
+		{
+			return 0; //this base address won't work out
+		}
 	}
-	//bucketStart += 0x00000008;
-
-	return returnAddress;
+	return 1; //this base address will
 }
 
-/* splits muckets, halfemory in half. half for b for bucket flags 
-	also checks to make sure space is available*/
-char* meduimGetMem(unsigned int numberOfBuckets)
+void markMemory(char* baseAddress, int size)
 {
-	char* returnAddress = bucketStart;
-	char* currFlag = byteFlagStart;
-
-	unsigned int count = 0;
-	unsigned int tracker = 0;
-
-	/* Starting from bucketStart. Check for available memory. Once it is found
-		make sure it has enough space behind it and flag the buckets
-		return the starting address for the space*/
-
-	while (count < numberOfBuckets)
+	for(char* c = baseAddress; c < baseAddress + size; c++)
 	{
-		// 0xFFFFFFFF is the value I am using for "unavailable"
-		if (&currFlag != 0xFFFFFFFF)
-		{
-			count++;
-		}
-		else 
-		{
-			// tracker should only be added to at the last possible starting spot
-			tracker += count;
-
-			// count is reset once a flag is hit
-			count = 0;
-		}
-
-		// move the pointer to the next spot always
-		currFlag += 0x00000008;
+		*c = 1;
 	}
-
-	// not sure how C works with decimal and hex multiplying but python does fine
-	returnAddress += (0x00000008 * tracker);
-	return returnAddress;
 }
 
-
-char* getMem(unsigned int numberOfBuckets) 
+// double check litman's git
+char* getMem(unsigned int numBytes)
 {
-	// Return the base address where that much memory can be used
-	// Mark that the memory there is in use
+	int dataMapOffset = (int)dataRealStart - (int)dataMarkStart;
+	for(char* c = dataMarkStart; c <= dataMarkEnd; c++)
+	{
+		if(*c == 0)
+		{
+			if (isMemoryAvailable(c, numBytes))
+			{
+				markMemory(c, numBytes);
+				return c + dataMapOffset;
+			}
+		}
+	}
+}
 
-	// separate memory into 7/8 and 1/8 
-	// memory is given out in byte sized buckets
-	// memory is declared "used" by a single bit in a reserved section
-	// if buckets 1 and 3 are "used" then reserved: 00000101 -> 5
+void freeMem(char* baseAddress, int numBytes)
+{
+	char* c = baseAddress;
+	for(int i = 0; i < numBytes; i++)
+	{
+		*(baseAddress)
+	}
+}
 
-	// only placed here to make the compiler happy for temp
-	//char* returnAddress = easyGetMem(numberOfBuckets);
-	char* returnAddress = mediumGetMem(numberOfBuckets);
-
-	return returnAddress;
+void unmarkAllMemory()
+{
+	for(char* c = dataMarkStart; c <= dataMarkEnd; c++)
+	{
+		*c = 0;
+	}
 }
 
 int main(void)
 {
+	//prepare os for handing out memory
+	unmarkAllMemory();
+
 	fb_clear();
 	fb_write_cell(0, 'B', 5, 3);
 	fb_move_cursor(0);
@@ -207,5 +191,11 @@ int main(void)
 	for (int i = 0; i < 16; i++)
 	{
 		fb_write_cell(i*2, s[i], 5, 3);
+	}
+
+	for(int i = 0; i < 25; i++)
+	{
+		s = getMem(5);
+		//strcpy(s, "hello", )
 	}
 }
