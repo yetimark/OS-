@@ -55,6 +55,18 @@ void interrupt_handler(__attribute__((unused)) struct cpu_state cpu, unsigned in
             if(ascii == '\n') {
                 fb_newline();
             }
+            else if (scan_code == 72){
+                arrow_up();
+            }
+            else if (scan_code == 75){
+                arrow_left();
+            }
+            else if (scan_code == 77){
+                arrow_right();
+            }
+            else if (scan_code == 80){
+                arrow_down();
+            }
             else {
                 fb_write(ascii);
             }

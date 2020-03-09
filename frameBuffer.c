@@ -18,7 +18,7 @@
 char* fb = (char *) 0x000B8000;
 
 // may need to change type, it is used for cursor and cell..
-unsigned int fb_pos;
+int fb_pos;
 
 
 void fb_move_cursor(unsigned short pos)
@@ -50,6 +50,43 @@ void fb_write(char c)
 	update_cursor();
 }
 
+
+
+void arrow_up()
+{
+	fb_pos -= 80;
+	if(fb_pos < 0){
+		fb_pos += 80;
+	}
+	else {
+		update_cursor();
+	}
+}
+
+void arrow_left()
+{
+	fb_pos--;
+	if(fb_pos < 0){
+		fb_pos++;
+	}
+	else {
+		update_cursor();
+	}
+}
+
+void arrow_right()
+{
+	fb_pos++;
+	update_cursor();
+}
+
+void arrow_down()
+{
+	fb_pos += 80;
+	update_cursor();
+}
+
+
 void fb_newline()
 {
 	fb_pos += (80 - (fb_pos % 80));
@@ -60,8 +97,13 @@ void fb_newline()
 void fb_backspace()
 {
 	fb_pos--;
-	fb_write_cell(fb_pos *2, ' ');
-	update_cursor();
+	if(fb_pos < 0){
+		fb_pos++;
+	}
+	else {
+		fb_write_cell(fb_pos *2, ' ');
+		update_cursor();
+	}
 }
 
 
