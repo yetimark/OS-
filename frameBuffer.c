@@ -16,6 +16,8 @@
 
 /* frame buffer */
 char* fb = (char *) 0x000B8000;
+
+// may need to change type, it is used for cursor and cell..
 unsigned int fb_pos;
 
 
@@ -27,6 +29,10 @@ void fb_move_cursor(unsigned short pos)
 	outb(FB_DATA_PORT, pos & 0x00FF);
 }
 
+void update_cursor()
+{
+	fb_move_cursor(fb_pos);
+}
 
 // framebuffer for writing on screen
 void fb_write_cell(unsigned int i, char c)
@@ -36,27 +42,26 @@ void fb_write_cell(unsigned int i, char c)
 }
 
 
-void fb_write_string(int offset, char* s, int length)
-{
-	for(int i = 0; i < length; i++)
-	{
-		fb_write_cell(offset + i*2, s[i]);
-	}
-}
-
 // should work fine unless backspacing needs to be done
-void fb_write_input(char c)
+void fb_write(char c)
 {
 	fb_write_cell(fb_pos *2, c);
 	fb_pos++;
-	fb_move_cursor(fb_pos);
+	update_cursor();
 }
+
+void fb_newline()
+{
+	fb_pos += (80 - (fb_pos % 80));
+	update_cursor();
+}
+
 
 void fb_backspace()
 {
 	fb_pos--;
 	fb_write_cell(fb_pos *2, ' ');
-	fb_move_cursor(fb_pos);
+	update_cursor();
 }
 
 
@@ -66,6 +71,6 @@ void fb_clear()
 	{
 		fb_write_cell(i*2, ' ');
 	}
-	fb_move_cursor(0);
 	fb_pos = 0;
+	update_cursor();
 }

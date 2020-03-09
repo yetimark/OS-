@@ -10,12 +10,12 @@ struct idt_entry idt[256];
 
 static unsigned char scan_code_to_ascii[256] =
 {
-    0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0x0,
-    0x0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
-    0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0x0, '\\',
-    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0x0, '*', 0x0, ' ',
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'
+    0x0, 0x0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 0x0,  // 0-14
+    0x0, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',      // 15-28
+    0x0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0x0, '\\',// 29-43
+    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0x0, '*', 0x0, ' ',       // 44-57
+    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,            // 58-70
+    '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'             // 71-83
 };
 
 
@@ -51,12 +51,20 @@ void interrupt_handler(__attribute__((unused)) struct cpu_state cpu, unsigned in
         char ascii = scan_code_to_ascii[scan_code];
 
         if(ascii != 0x0)
-        {            
-            fb_write_input(ascii);
+        {
+            if(ascii == '\n') {
+                fb_newline();
+            }
+            else {
+                fb_write(ascii);
+            }
             pic_acknowledge(interrupt);
         }
         else
         {
+            if(scan_code == 14){
+                fb_backspace();
+            }
             pic_acknowledge(interrupt);
             return;
         }
