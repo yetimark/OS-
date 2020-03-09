@@ -24,7 +24,7 @@ void gdt_make_entry(int index, unsigned int baseAddress, unsigned char access_by
     GDT[index].access_byte = access_byte;
 }
 
-void gdt_init()
+void init_gdt()
 {
     GDT[0].base_low = 0;
     GDT[0].base_middle = 0;

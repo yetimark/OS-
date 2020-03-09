@@ -13,6 +13,6 @@ struct gdt_entry {
 }__attribute__((packed));
 
 
-void gdt_init();
+void init_gdt();
 void load_gdt(struct gdt_descriptor GDT);
 void load_registers();

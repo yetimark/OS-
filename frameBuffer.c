@@ -7,7 +7,7 @@
 
 /* The I/O port commands */
 #define FB_HIGH_BYTE_COMMAND	14
-#define FB_LOW_BYTE_COMMAND	15
+#define FB_LOW_BYTE_COMMAND		15
 
 /* Colors for fonts */
 #define FB_FONT		0
@@ -16,6 +16,7 @@
 
 /* frame buffer */
 char* fb = (char *) 0x000B8000;
+unsigned int fb_pos;
 
 
 void fb_move_cursor(unsigned short pos)
@@ -43,6 +44,14 @@ void fb_write_string(int offset, char* s, int length)
 	}
 }
 
+// should work fine unless backspacing needs to be done
+void fb_write_input(char c)
+{
+	fb_write_cell(fb_pos, c);
+	fb_pos++;
+	fb_move_cursor(fb_pos);
+}
+
 
 void fb_clear()
 {
@@ -50,4 +59,6 @@ void fb_clear()
 	{
 		fb_write_cell(i*2, ' ');
 	}
+	fb_move_cursor(0);
+	fb_pos = 0;
 }
