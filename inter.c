@@ -51,11 +51,14 @@ void interrupt_handler(__attribute__((unused)) struct cpu_state cpu, unsigned in
         char ascii = scan_code_to_ascii[scan_code];
 
         if(ascii != 0x0)
-        {
-            fb_clear();
-            //fb_write_input(ascii);
-            fb_write_cell(0, ascii);
+        {            
+            fb_write_input(ascii);
             pic_acknowledge(interrupt);
+        }
+        else
+        {
+            pic_acknowledge(interrupt);
+            return;
         }
     }
 

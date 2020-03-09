@@ -47,8 +47,15 @@ void fb_write_string(int offset, char* s, int length)
 // should work fine unless backspacing needs to be done
 void fb_write_input(char c)
 {
-	fb_write_cell(fb_pos, c);
+	fb_write_cell(fb_pos *2, c);
 	fb_pos++;
+	fb_move_cursor(fb_pos);
+}
+
+void fb_backspace()
+{
+	fb_pos--;
+	fb_write_cell(fb_pos *2, ' ');
 	fb_move_cursor(fb_pos);
 }
 
